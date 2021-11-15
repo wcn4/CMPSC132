@@ -102,7 +102,9 @@ class CacheList:
         ITEMS:0
         LIST:
         <BLANKLINE>
+   
     '''
+    
     def __init__(self, size):
         self.head = None
         self.maxSize = size
@@ -128,7 +130,23 @@ class CacheList:
         #If less than max size, do not evict
         #If exceeds max size, evict according to eviction policy
         #If contend iD exists in list before insertion, move content to the beginning of list
-        pass
+        if content.cid in self:
+            return f'Content {content.cid} already in cache, insertion not allowed'
+        if content.size > self.maxSize:
+            return 'Insertion not allowed'
+        #If the content size is larger than the amount of space remaining, free up space until it can
+        while content.size > self.remainingSpace:
+            if (evictionPolicy == 'lru'):
+                self.lruEvict()
+            else:
+                self.mruEvict()
+        newNode = Node(content)
+        self.remainingSpace -= content.size
+        self.numItems += 1
+        newNode.next = self.head
+        self.head = newNode
+        return f'INSERTED: {content}'
+        
     
     #Finds an item from list by id
     #Moves item to the front of the list if found
@@ -137,12 +155,12 @@ class CacheList:
         #If size == 0, return False
         #If size == 1, return self.head.cid == cid
         if (self.numItems <= 1):
-            return self.head and self.head.cid == cid
+            return self.head and self.head.value.cid == cid
         
         prevItem = None
         currItem = self.head
         #While the item is not found, iterate to the next item
-        while (currItem and currItem.cid != cid):
+        while (currItem and currItem.value.cid != cid):
             prevItem = currItem
             currItem = currItem.next
 
@@ -150,9 +168,10 @@ class CacheList:
         if (currItem == None):
             return False
         #If the item is found, moves the item to the front
-        prevItem.next = currItem.next
-        currItem.next = self.head
-        self.head = currItem
+        if not (currItem is self.head):
+            prevItem.next = currItem.next
+            currItem.next = self.head
+            self.head = currItem
         return True
 
 
@@ -160,28 +179,22 @@ class CacheList:
         if (self.numItems <= 1):
             #If there is an element, and that element matches the id and the new change 
             #does not exceed the max size, update item
-            if (self.head and self.head.cid == cid and (content.size - self.head.size) <= self.maxSize):
+            if (self.head and self.head.value.cid == cid and (content.size - self.head.value.size) <= self.remainingSpace):
                 self.head = content
                 return f'UPDATED: {content}'
             else:
                 return 'Cache miss!'
-        prevItem = None
-        currItem = self.head
-        #While the item is not found, iternate to the next item
-        while (currItem and currItem.cid != cid):
-            prevItem = currItem
-            currItem = currItem.next
-        #If the item was not found:
-        if (currItem == None):
+        #If the item was not found, then return Cache Miss
+        if not (cid in self):
             return 'Cache miss!'
-        #If the item was found but the new size exceeds max size
-        if ((content.size - currItem.size) + self.size) > self.maxSize:
+        #If the item was found but the new size exceeds space left
+        if (content.size - self.head.value.size) > self.remainingSpace:
             return 'Cache miss!'
-        #Delete the item found and move the updated item to the front
-        prevItem.next = currItem.next
-        content.next = self.head
-        self.head = content
+        #Update the space remaining
+        self.remainingSpace -= (content.size - self.head.value.size)
+        self.head.value = content
         return f'UPDATED: {content}'
+
 
     #Removes most recently used element (first element)
     def mruEvict(self):
@@ -190,8 +203,8 @@ class CacheList:
             self.remainingSpace = self.maxSize
             self.numItems = 0
             return
-
-        self.remainingSpace += self.head.size 
+        #Updates the amount of space left
+        self.remainingSpace += self.head.value.size 
         self.head = self.head.next
         self.numItems -= 1
     
@@ -206,8 +219,9 @@ class CacheList:
         temp = self.head
         while (temp.next.next != None):
             temp = temp.next
-
-        self.remainingSpace += temp.next.size
+        
+        #Updates the amount of space
+        self.remainingSpace += temp.next.value.size
         temp.next = None
         self.numItems -= 1
 
@@ -216,6 +230,7 @@ class CacheList:
         self.head = None
         self.remainingSpace = self.maxSize
         self.numItems = 0
+        return f'Cleared cache!'
 
 class Cache:
     """
@@ -293,23 +308,26 @@ class Cache:
             item.clear()
         return 'Cache cleared!'
 
-    
+    #Inserts an item ito the Cache 
     def insert(self, content, evictionPolicy):
-        # YOUR CODE STARTS HERE
-        pass
+        return self.hierarchy[hash(content)].put(content, evictionPolicy)
 
-
+    #Retrieves an item from the Cache, searches using content id
     def __getitem__(self, content):
-        # YOUR CODE STARTS HERE
-        pass
+        if (content.cid in self.hierarchy[hash(content)]):
+            return self.hierarchy[hash(content)].head.value
+        return 'Cache miss!'
 
-
-
+    #Updates a given item in the Cache
+    #Uses the content id given to search for the item
     def updateContent(self, content):
-        # YOUR CODE STARTS HERE
-        pass
-
+        if (self.hierarchy[hash(content)].update(content.cid, content) == 'Cache miss!'):
+            return 'Cache miss!'
+        return f'UPDATED: {self.hierarchy[hash(content)].head.value}'
 
 if __name__=='__main__': 
     import doctest
-    doctest.run_docstring_examples(ContentItem, globals(), name='HW5', verbose=True)
+    doctest.testmod()
+    #doctest.run_docstring_examples(CacheList, globals(), name='HW5', verbose=True)
+    #doctest.testfile('HW5_EXTENDED DOCTEST.py')
+
