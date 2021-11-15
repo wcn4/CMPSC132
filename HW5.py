@@ -140,6 +140,7 @@ class CacheList:
                 self.lruEvict()
             else:
                 self.mruEvict()
+        #Create a new node, update size remaining and make it the new head
         newNode = Node(content)
         self.remainingSpace -= content.size
         self.numItems += 1
@@ -174,7 +175,9 @@ class CacheList:
             self.head = currItem
         return True
 
-
+    #Will update a node with the given cid. 
+    #Will also move the node to the top regardless of whether it has been updated or not
+    #If the node is not found or the content update exceeds size limits then will not be updated
     def update(self, cid, content):
         if (self.numItems <= 1):
             #If there is an element, and that element matches the id and the new change 
