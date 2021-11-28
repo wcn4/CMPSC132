@@ -1,116 +1,123 @@
-def quickSort(numList):
-    '''
-        >>> quickSort([3, 5, 4, 1, 2])
-        [1, 2, 3, 4, 5]
-        >>> quickSort([7,2,1])
-        [1, 2, 7]
-        >>> quickSort([1,1,1,1,1])
-        [1, 1, 1, 1, 1]
-        >>> quickSort([4,6,5,2,3])
-        [2, 3, 4, 5, 6]
-        >>> quickSort([4,6,5,2,3,3])
-        [2, 3, 3, 4, 5, 6]
-    '''
-        #>>> quickSort([2,1,2,1,2,1])
-        #[1, 1, 1, 2, 2, 2]
-    n=len(numList)
-    #By definition, a list of size one or zero will be sorted
-    if n<=1:
-        return numList
-    #x is the pivot
-    #left is set to same index as pivot
-    #Right is set last index
-    x, left, right = numList[0], 0, n-1
-    while left<right:
-        #If the left index is less than x, increment left by 1
-        if numList[left]<=x:    
-            left+=1
+# Recitation 10 - Sorting
+# Don't forget you can ask the course staff or your recitation partner if you have any questions regarding this activity
+
+
+from timeit import timeit
+from random import randrange
+
+#   All of the coding for this assignment will be in these three functions
+
+def selection_sort(numList):
+    """Selection Sort: choose first, second, etc."""
+    size = len(numList)
+    for pos in range(size):
+        minpos = pos
+        for seek in range(pos,size):    # find smallest in range
+            # -- YOUR CODE STARTS HERE
+            if (numList[seek] <= numList[minpos]):
+                minpos = seek
+            # -- YOUR CODE ENDS HERE
+
+
+        numList[minpos],numList[pos] = numList[pos],numList[minpos]
+
+def insertion_sort(numList):
+    """Insertion Sort: insert each new element into sorted array"""
+    size = len(numList)
+    for pos in range(1,size):
+        value = numList[pos]              # insert this value into sorted data
+        # -- YOUR CODE STARTS HERE
+        #When inserting the value, repeatedly swap the value from its current position
+        #to its correct position, thus performing an insertion
+        for x in range(pos-1, -1, -1):
+            if (numList[x] >= value):
+                numList[x], numList[x+1] = numList[x+1], numList[x]
+                pos -= 1
+            else:
+                break
+        
+        # -- YOUR CODE ENDS HERE
+        numList[pos] = value 
+
+
+
+def bubble_sort(numList):
+    """Bubble Sort: exchange any adjacent values that are out of order"""
+    size = len(numList)
+    sorted = False                      # expect to check at least once
+    while not sorted:
+        sorted = True                   # assume it is sorted this time
+        for pos in range(1,size):
+            if numList[pos] < numList[pos-1]:
+                # -- YOUR CODE STARTS HERE
+                numList[pos-1], numList[pos] = numList[pos], numList[pos-1]
+                sorted = False
+                # -- YOUR CODE ENDS HERE
+
+
+
+
+# Functions to test the results quickly
+
+def verify(numList):
+    """Make sure the data is sorted"""
+    size = len(numList)
+    for pos in range(1,size):
+        if numList[pos] < numList[pos-1]:
+            print("Not sorted at positions", pos-1, "and", pos)
+            return False
+    return True
+
+def test_sort():
+    """Test sorts for ten element array"""
+    arr = [1,3,5,7,9,8,6,4,2,0]
+    selection_sort(arr)
+    print(f'arr after Selection sort: {arr}')
+    
+    arr = [1,3,5,7,9,8,6,4,2,0]
+    insertion_sort(arr)
+    print(f'arr after Insertion sort: {arr}')
+    
+    arr = [1,3,5,7,9,8,6,4,2,0]
+    bubble_sort(arr)
+    print(f'arr after Bubble sort: {arr}')
+
+
+def time_test(sort,size=0):
+    """Time these sorts for a given array size"""
+    arr = [0]*size
+    for i in range(size):
+        arr[i] = randrange(1000000000)
+    time1 = timeit('sort(arr)', globals = locals(), number=1)
+    time2 = timeit('sort(arr)', globals = locals(), number=1)
+    print("{:7.3f} s".format(time1),"{:7.3f} s".format(time2)) 
+    verify(arr)
+
+
+test_sort()
+print(f'Selection Sort')
+time_test(selection_sort, 500)
+time_test(selection_sort, 1000)
+print(f'Insertion Sort')
+time_test(insertion_sort, 500)
+time_test(insertion_sort, 1000)
+
+print(f'Bubble Sort')
+time_test(bubble_sort, 500)
+time_test(bubble_sort, 1000)
+
+#   This is a bad approximation of the bubble sort, for demonstration only
+    
+def bad_sort(numList):
+    size = len(numList)
+    i = 1
+    while i < size:
+        if numList[i] < numList[i-1]:
+            numList[i],numList[i-1] = numList[i-1],numList[i]
+            i = 1
         else:
-        #Otherwise, swap the left and right values
-        #and then decrement the right by 1
-            numList[left], numList[right]  =  numList[right], numList[left]
-            right -=1
-    #Once left and right are equal or right is less than left
-    #Swap the pivot with the left value
-    numList[0], numList[left] = numList[left], numList[0]
-    #Recursively call quickSort on the left and right parts of the list
-    quickSort(numList[:left])
-    quickSort(numList[left+1:])
-    return numList
-
-def quickSort2(numList):
-    '''
-        >>> quickSort2([3, 5, 4, 1, 2])
-        [1, 2, 3, 4, 5]
-        >>> quickSort2([7,2,1])
-        [1, 2, 7]
-        >>> quickSort2([1,1,1,1,1])
-        [1, 1, 1, 1, 1]
-        >>> quickSort2([4,6,5,2,3])
-        [2, 3, 4, 5, 6]
-        >>> quickSort2([4,6,5,2,3,3])
-        [2, 3, 3, 4, 5, 6]
-        >>> quickSort2([2,1,2,1,2,1])
-        [1, 1, 1, 2, 2, 2]
-    '''
-    return quickSort3(numList, 0, len(numList)-1)
-    
-def quickSort3(numList, l, r):
-    n=r-l
-    #By definition, a list of size one or zero will be sorted
-    if n <= 1:
-        return numList
-    
-    if n==2:
-        if numList[1] < numList[0]:
-            numList[0],numList[1] = numList[1],numList[0]
-        return numList
-    #x is the pivot
-    #left is set to same index as pivot
-    #Right is set last index
-    x, left, right = numList[0], l+1, r
-    while not (right < left):
-        while left<=right and numList[left] <= x:
-            print('\tMoving left var from ', numList[left], '(i=', left, ') to', left+1)
-            left+=1
-        while right >= left and numList[right] >= x: 
-            print('\tMoving right var from ', numList[right], '(i=', right, ') to', right+1)
-            right -=1
-        if not right < left:
-            numList[left], numList[right]  =  numList[right], numList[left]
-        print('Left is ', left, ' Right is ', right, ' and max index is ', len(numList)-1)
-    
-    if (left >= len(numList)):
-        left -= 1
-    numList[0], numList[left] = numList[left], numList[0]
-    print('\tSplitting into ', numList[:left], ' and ', numList[(left+1):], 'at ', left)
-    quickSort3(numList, 0, left-1)
-    quickSort3(numList, left+1, len(numList)-1)
-    return numList
-
-
-'''
-  
-        #Otherwise, swap the left and right values
-        #and then decrement the right by 1
-    #Once left and right are equal or right is less than left
-    #Swap the pivot with the left value
-    print("\tBefore final swap: ", numList[l:r], end=' after: ')
-        if numList[left]<=x and left<=right:   
-            print('\tIncrementing Left (Left = ', left, ') ',  numList[left], end=' ')
-            left+=1
-            print('\tNow Left is (Left = ', left, ') ',  numList[left])
-        if numList[right]>=x and right>=left:
-            print('\tDecrementing Right (Right = ', right, ') ',  numList[right], end=' ') 
-            right-=1
-            print('\tNow Right is (Right = ', right, ') ', numList[right])
-        if numList[left] >= x and numList[right] <= x:
-            print('\tSwapping ', numList[left], ' and ', numList[right], end=' ')
-            numList[left], numList[right]  =  numList[right], numList[left] 
-            print('\tNow list is ', numList[l:r])
-
-
-    print('\t', numList[l:r])
-    print('\tSplitting into ', numList[:left], ' and ', numList[left+1:], 'at ', left)
-    #Recursively call quickSort on the left and right parts of the list
-'''
+            i = i+1
+print(f'Bad Sort: ')
+time_test(bad_sort,50) 
+time_test(bad_sort,100)
+time_test(bad_sort,200)

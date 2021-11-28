@@ -78,7 +78,7 @@ class CacheList:
         'INSERTED: CONTENT ID: 1006 SIZE: 18 HEADER: another header CONTENT: 111110'
         >>> lst.put(content5, 'mru')
         'INSERTED: CONTENT ID: 1008 SIZE: 2 HEADER: items CONTENT: 11x1110'
-        >>> lst.put(content3, 'lru')
+        >> lst.put(content3, 'lru')
         "INSERTED: CONTENT ID: 1005 SIZE: 180 HEADER: Content-Type: 2 CONTENT: <html><p>'CMPSC132'</p></html>"
         >>> lst.put(content1, 'mru')
         'INSERTED: CONTENT ID: 1000 SIZE: 10 HEADER: Content-Type: 0 CONTENT: 0xA'
